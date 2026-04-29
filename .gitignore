@@ -1,0 +1,16 @@
+node_modules/
+.env
+dist/
+build/
+*.log
+.vscode/
+.idea/
+*.exe
+*.apk
+*.zip
+*.rar
+uploads/
+database/OEMS.sql
+scripts/*.js
+!scripts/import_db.js
+!scripts/check_db.js
