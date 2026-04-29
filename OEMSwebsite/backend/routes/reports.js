@@ -130,12 +130,12 @@ router.get('/funds', authenticateToken, async (req, res) => {
     const { type, scope, start_date, end_date } = req.query; // 'ceo-manager' or 'manager-user', 'scope'='me'|'team'
 
     let query = `
-      SELECT of.*, 
+      SELECT op.*, 
              fu.full_name as from_user_name, fu.email as from_user_email, fu.role as from_role,
              tu.full_name as to_user_name, tu.email as to_user_email, tu.role as to_role
-      FROM operational_funds of
-      JOIN users fu ON of.from_user_id = fu.id
-      JOIN users tu ON of.to_user_id = tu.id
+      FROM operational_funds op
+      JOIN users fu ON op.from_user_id = fu.id
+      JOIN users tu ON op.to_user_id = tu.id
       WHERE 1=1
     `;
     const params = [];
@@ -150,28 +150,28 @@ router.get('/funds', authenticateToken, async (req, res) => {
 
     // Role-based filtering
     if (role === 'USER') {
-      query += ' AND of.to_user_id = ?';
+      query += ' AND op.to_user_id = ?';
       params.push(userId);
     } else if (role === 'MANAGER') {
       if (scope === 'me') {
-        query += ' AND of.from_user_id = ?';
+        query += ' AND op.from_user_id = ?';
         params.push(userId);
       } else {
-        query += ' AND (of.from_user_id = ? OR of.to_user_id = ?)';
+        query += ' AND (op.from_user_id = ? OR op.to_user_id = ?)';
         params.push(userId, userId);
       }
     }
 
     if (start_date) {
-      query += ' AND of.created_at >= ?';
+      query += ' AND op.created_at >= ?';
       params.push(start_date + ' 00:00:00');
     }
     if (end_date) {
-      query += ' AND of.created_at <= ?';
+      query += ' AND op.created_at <= ?';
       params.push(end_date + ' 23:59:59');
     }
 
-    query += ' ORDER BY of.created_at DESC';
+    query += ' ORDER BY op.created_at DESC';
 
     const [funds] = await db.execute(query, params);
 
