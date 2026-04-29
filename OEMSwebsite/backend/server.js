@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
  * Static File Serving
  * Serves uploaded documents and images from the 'uploads' directory.
  */
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(process.env.VERCEL === '1' ? '/tmp/uploads' : path.join(__dirname, 'uploads')));
 
 /**
  * API Route Definitions

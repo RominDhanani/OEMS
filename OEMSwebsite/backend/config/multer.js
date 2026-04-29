@@ -2,15 +2,22 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+const isVercel = process.env.VERCEL === '1';
+const baseUploadPath = isVercel ? '/tmp' : path.join(__dirname, '..');
+
 // Create uploads directory if it doesn't exist
-const uploadDir = path.join(__dirname, '..', process.env.UPLOAD_DIR || 'uploads');
+const uploadDir = path.join(baseUploadPath, process.env.UPLOAD_DIR || 'uploads');
 const expenseUploadDir = path.join(uploadDir, 'expenses');
 const expansionUploadDir = path.join(uploadDir, 'expansion-funds');
 const chequeUploadDir = path.join(uploadDir, 'cheques');
 
 [uploadDir, expenseUploadDir, expansionUploadDir, chequeUploadDir].forEach(dir => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  } catch (err) {
+    console.warn(`Could not create directory ${dir}:`, err.message);
   }
 });
 
