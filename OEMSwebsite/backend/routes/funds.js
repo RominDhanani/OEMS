@@ -318,34 +318,34 @@ router.get('/operational', authenticateToken, async (req, res) => {
     const { type } = req.query; // 'sent' or 'received'
 
     let query = `
-      SELECT of.*, 
+      SELECT op.*, 
              fu.full_name as from_user_name, fu.email as from_user_email,
              tu.full_name as to_user_name, tu.email as to_user_email
-      FROM operational_funds of
-      JOIN users fu ON of.from_user_id = fu.id
-      JOIN users tu ON of.to_user_id = tu.id
+      FROM operational_funds op
+      JOIN users fu ON op.from_user_id = fu.id
+      JOIN users tu ON op.to_user_id = tu.id
       WHERE 1=1
     `;
     const params = [];
 
     if (type === 'sent') {
-      query += ' AND of.from_user_id = ?';
+      query += ' AND op.from_user_id = ?';
       params.push(userId);
     } else if (type === 'received') {
-      query += ' AND of.to_user_id = ?';
+      query += ' AND op.to_user_id = ?';
       params.push(userId);
     } else {
       // CEO sees all
       if (role === 'USER') {
-        query += ' AND of.to_user_id = ?';
+        query += ' AND op.to_user_id = ?';
         params.push(userId);
       } else if (role === 'MANAGER') {
-        query += ' AND (of.from_user_id = ? OR of.to_user_id = ?)';
+        query += ' AND (op.from_user_id = ? OR op.to_user_id = ?)';
         params.push(userId, userId);
       }
     }
 
-    query += ' ORDER BY of.created_at DESC';
+    query += ' ORDER BY op.created_at DESC';
 
     const [funds] = await db.execute(query, params);
 
@@ -364,13 +364,13 @@ router.get('/operational/:id', authenticateToken, async (req, res) => {
     const userId = req.user.id;
 
     const query = `
-      SELECT of.*, 
+      SELECT op.*, 
              fu.full_name as from_user_name, fu.email as from_user_email,
              tu.full_name as to_user_name, tu.email as to_user_email
-      FROM operational_funds of
-      JOIN users fu ON of.from_user_id = fu.id
-      JOIN users tu ON of.to_user_id = tu.id
-      WHERE of.id = ?
+      FROM operational_funds op
+      JOIN users fu ON op.from_user_id = fu.id
+      JOIN users tu ON op.to_user_id = tu.id
+      WHERE op.id = ?
     `;
 
     const [funds] = await db.execute(query, [id]);
@@ -889,11 +889,11 @@ router.get('/expansion', authenticateToken, async (req, res) => {
       SELECT ef.*, 
              u.full_name as manager_name, u.email as manager_email,
              r.full_name as reviewer_name,
-             of.cheque_image_path
+             op.cheque_image_path
       FROM expansion_funds ef
       JOIN users u ON ef.manager_id = u.id
       LEFT JOIN users r ON ef.reviewed_by = r.id
-      LEFT JOIN operational_funds of ON ef.id = of.expansion_id
+      LEFT JOIN operational_funds op ON ef.id = op.expansion_id
       WHERE 1=1
     `;
     const params = [];
@@ -926,11 +926,11 @@ router.get('/expansion/:id', authenticateToken, async (req, res) => {
       SELECT ef.*, 
              u.full_name as manager_name, u.email as manager_email,
              r.full_name as reviewer_name,
-             of.cheque_image_path
+             op.cheque_image_path
       FROM expansion_funds ef
       JOIN users u ON ef.manager_id = u.id
       LEFT JOIN users r ON ef.reviewed_by = r.id
-      LEFT JOIN operational_funds of ON ef.id = of.expansion_id
+      LEFT JOIN operational_funds op ON ef.id = op.expansion_id
       WHERE ef.id = ?
     `;
 
