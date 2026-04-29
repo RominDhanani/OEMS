@@ -1,60 +1,38 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-const isVercel = process.env.VERCEL === '1';
-const baseUploadPath = isVercel ? '/tmp' : path.join(__dirname, '..');
-
-// Create uploads directory if it doesn't exist
-const uploadDir = path.join(baseUploadPath, process.env.UPLOAD_DIR || 'uploads');
-const expenseUploadDir = path.join(uploadDir, 'expenses');
-const expansionUploadDir = path.join(uploadDir, 'expansion-funds');
-const chequeUploadDir = path.join(uploadDir, 'cheques');
-
-[uploadDir, expenseUploadDir, expansionUploadDir, chequeUploadDir].forEach(dir => {
-  try {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-  } catch (err) {
-    console.warn(`Could not create directory ${dir}:`, err.message);
-  }
-});
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('./cloudinary');
 
 // Configure storage for expense documents
-const expenseStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, expenseUploadDir);
+const expenseStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'oems/expenses',
+    resource_type: 'auto', // Allows non-image files like PDFs
+    allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
   },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'expense-' + uniqueSuffix + path.extname(file.originalname));
-  }
 });
 
 // Configure storage for expansion fund documents
-const expansionStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, expansionUploadDir);
+const expansionStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'oems/expansion-funds',
+    resource_type: 'auto',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
   },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'expansion-' + uniqueSuffix + path.extname(file.originalname));
-  }
 });
 
 // Configure storage for cheques
-const chequeStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, chequeUploadDir);
+const chequeStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'oems/cheques',
+    resource_type: 'auto',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
   },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'cheque-' + uniqueSuffix + path.extname(file.originalname));
-  }
 });
 
-// File filter
+// File filter (optional, Cloudinary also handles allowed_formats)
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
   if (allowedTypes.includes(file.mimetype)) {
@@ -77,7 +55,7 @@ const expansionUpload = multer({
   storage: expansionStorage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024 // 10MB default
+    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024
   }
 });
 
@@ -85,7 +63,7 @@ const chequeUpload = multer({
   storage: chequeStorage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024 // 10MB default
+    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024
   }
 });
 
@@ -93,7 +71,4 @@ module.exports = {
   expenseUpload,
   expansionUpload,
   chequeUpload,
-  expenseUploadDir,
-  expansionUploadDir,
-  chequeUploadDir
 };

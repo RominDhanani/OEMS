@@ -40,7 +40,7 @@ router.post('/operational', authenticateToken, authorizeRoles('CEO', 'MANAGER'),
       if (req.file) {
         // Clean up uploaded file if validation fails
         const fs = require('fs');
-        fs.unlinkSync(req.file.path);
+        if(!req.file.path.startsWith('http')) fs.unlinkSync(req.file.path);
       }
       return res.status(400).json({ message: 'Recipient user ID and amount are required' });
     }
@@ -49,7 +49,7 @@ router.post('/operational', authenticateToken, authorizeRoles('CEO', 'MANAGER'),
     if (payment_mode && !['CASH', 'CHEQUE', 'UPI'].includes(payment_mode)) {
       if (req.file) {
         const fs = require('fs');
-        fs.unlinkSync(req.file.path);
+        if(!req.file.path.startsWith('http')) fs.unlinkSync(req.file.path);
       }
       return res.status(400).json({ message: 'Invalid payment mode' });
     }
@@ -58,7 +58,7 @@ router.post('/operational', authenticateToken, authorizeRoles('CEO', 'MANAGER'),
       if (!cheque_number || !bank_name || !cheque_date || !account_holder_name) {
         if (req.file) {
           const fs = require('fs');
-          fs.unlinkSync(req.file.path);
+          if(!req.file.path.startsWith('http')) fs.unlinkSync(req.file.path);
         }
         return res.status(400).json({ message: 'Missing required Cheque details' });
       }
@@ -80,7 +80,7 @@ router.post('/operational', authenticateToken, authorizeRoles('CEO', 'MANAGER'),
     if (recipients.length === 0) {
       if (req.file) {
         const fs = require('fs');
-        fs.unlinkSync(req.file.path);
+        if(!req.file.path.startsWith('http')) fs.unlinkSync(req.file.path);
       }
       return res.status(404).json({ message: 'Recipient user not found' });
     }
@@ -90,7 +90,7 @@ router.post('/operational', authenticateToken, authorizeRoles('CEO', 'MANAGER'),
     if (recipient.status !== 'APPROVED') {
       if (req.file) {
         const fs = require('fs');
-        fs.unlinkSync(req.file.path);
+        if(!req.file.path.startsWith('http')) fs.unlinkSync(req.file.path);
       }
       return res.status(400).json({ message: 'Recipient user is not approved' });
     }
@@ -99,7 +99,7 @@ router.post('/operational', authenticateToken, authorizeRoles('CEO', 'MANAGER'),
     if (role === 'CEO' && recipient.role !== 'MANAGER') {
       if (req.file) {
         const fs = require('fs');
-        fs.unlinkSync(req.file.path);
+        if(!req.file.path.startsWith('http')) fs.unlinkSync(req.file.path);
       }
       return res.status(403).json({ message: 'CEO can only allocate funds to Managers' });
     }
@@ -107,7 +107,7 @@ router.post('/operational', authenticateToken, authorizeRoles('CEO', 'MANAGER'),
     if (role === 'MANAGER' && recipient.role !== 'USER') {
       if (req.file) {
         const fs = require('fs');
-        fs.unlinkSync(req.file.path);
+        if(!req.file.path.startsWith('http')) fs.unlinkSync(req.file.path);
       }
       return res.status(403).json({ message: 'Managers can only allocate funds to Users' });
     }
@@ -115,7 +115,7 @@ router.post('/operational', authenticateToken, authorizeRoles('CEO', 'MANAGER'),
     if (fromUserId === to_user_id) {
       if (req.file) {
         const fs = require('fs');
-        fs.unlinkSync(req.file.path);
+        if(!req.file.path.startsWith('http')) fs.unlinkSync(req.file.path);
       }
       return res.status(400).json({ message: 'Cannot allocate funds to yourself' });
     }

@@ -68,7 +68,7 @@ router.post('/', authenticateToken, authorizeRoles('MANAGER', 'USER'), expenseUp
           file.path,
           file.originalname,
           file.mimetype,
-          file.size
+          file.size || 0 // Cloudinary might not return size
         ]
       );
     });
@@ -204,11 +204,13 @@ router.get('/', authenticateToken, async (req, res) => {
     // Normalize document paths
     const normalizedExpenses = expenses.map(expense => {
       if (expense.document_path) {
-        // Find 'uploads' directory in the path and keep everything after it
-        const uploadsIndex = expense.document_path.indexOf('uploads');
-        if (uploadsIndex !== -1) {
-          // Normalize slashes to forward slashes for URL
-          expense.document_path = expense.document_path.substring(uploadsIndex).replace(/\\/g, '/');
+        if (!expense.document_path.startsWith('http://') && !expense.document_path.startsWith('https://')) {
+          // Find 'uploads' directory in the path and keep everything after it
+          const uploadsIndex = expense.document_path.indexOf('uploads');
+          if (uploadsIndex !== -1) {
+            // Normalize slashes to forward slashes for URL
+            expense.document_path = expense.document_path.substring(uploadsIndex).replace(/\\/g, '/');
+          }
         }
       }
       return expense;
@@ -302,7 +304,7 @@ router.put('/:id', authenticateToken, expenseUpload.array('vouchers', 10), async
         return db.execute(
           `INSERT INTO expense_documents (expense_id, document_path, original_filename, file_type, file_size) 
            VALUES (?, ?, ?, ?, ?)`,
-          [id, file.path, file.originalname, file.mimetype, file.size]
+          [id, file.path, file.originalname, file.mimetype, file.size || 0]
         );
       });
       await Promise.all(documentPromises);
@@ -567,6 +569,12 @@ router.get('/:id/documents/:docId', authenticateToken, async (req, res) => {
     }
 
     const doc = documents[0];
+    
+    // If it's a Cloudinary URL, simply redirect the user to it
+    if (doc.document_path.startsWith('http://') || doc.document_path.startsWith('https://')) {
+      return res.redirect(doc.document_path);
+    }
+
     const filePath = path.join(__dirname, '..', doc.document_path);
 
     if (!fs.existsSync(filePath)) {
@@ -637,15 +645,21 @@ router.delete('/:id/documents/:docId', authenticateToken, async (req, res) => {
       io.to('role_MANAGER').emit('expenseUpdated');
     } catch (err) { }
 
-    // Delete from filesystem (optional but good practice)
-    const fullPath = path.join(__dirname, '..', docPath);
-    if (fs.existsSync(fullPath)) {
-      try {
-        fs.unlinkSync(fullPath);
-      } catch (err) {
-        console.error('Failed to delete file from disk:', err);
-        // Continue even if disk delete fails
+    // Delete from filesystem if it's a local file
+    if (!docPath.startsWith('http://') && !docPath.startsWith('https://')) {
+      const fullPath = path.join(__dirname, '..', docPath);
+      if (fs.existsSync(fullPath)) {
+        try {
+          fs.unlinkSync(fullPath);
+        } catch (err) {
+          console.error('Failed to delete file from disk:', err);
+          // Continue even if disk delete fails
+        }
       }
+    } else {
+      // Cloudinary deletion can be implemented here in the future
+      // For now, DB deletion is sufficient to remove access
+      console.log('Skipping physical deletion of Cloudinary file:', docPath);
     }
 
     res.json({ message: 'Document deleted successfully' });
