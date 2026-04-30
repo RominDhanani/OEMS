@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
     
     // Create a direct connection to bypass any pool issues
     const connection = await mysql.createConnection({
-      host: '64.227.146.147', // Direct IP
+      host: process.env.DB_HOST,
       port: 20336,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,

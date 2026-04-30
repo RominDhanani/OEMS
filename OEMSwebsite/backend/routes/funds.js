@@ -173,11 +173,18 @@ router.post('/operational', authenticateToken, authorizeRoles('CEO', 'MANAGER'),
 
     // Handle linked expense status update
     let expenseId = req.body.expense_id;
+    if (expenseId) {
+      console.log(`[Fund Allocation] Linked Expense ID provided: ${expenseId}`);
+    }
     
     // Fallback to description parsing if expenseId not explicitly provided
     if (!expenseId && description) {
+      console.log(`[Fund Allocation] Searching description for Expense ID: "${description}"`);
       const match = description.match(/(?:\(ID:\s*|Expense\s*#)(\d+)/i);
-      if (match) expenseId = match[1];
+      if (match) {
+        expenseId = match[1];
+        console.log(`[Fund Allocation] Found Expense ID in description: ${expenseId}`);
+      }
     }
 
     if (expenseId) {

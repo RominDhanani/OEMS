@@ -39,6 +39,7 @@ class _AllocationFormState extends ConsumerState<AllocationForm> {
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
   int? _expansionId;
+  int? _expenseId;
   
   // Cheque fields
   final _chequeNumberController = TextEditingController();
@@ -87,6 +88,10 @@ class _AllocationFormState extends ConsumerState<AllocationForm> {
       _expansionId = widget.initialData!['expansion_id'] is int 
           ? widget.initialData!['expansion_id'] 
           : int.tryParse(widget.initialData!['expansion_id']?.toString() ?? '');
+      
+      _expenseId = widget.initialData!['expense_id'] is int 
+          ? widget.initialData!['expense_id'] 
+          : int.tryParse(widget.initialData!['expense_id']?.toString() ?? '');
 
       if (widget.initialData!['cheque_image_path'] != null) {
         _rawExistingImagePath = widget.initialData!['cheque_image_path'];
@@ -167,6 +172,10 @@ class _AllocationFormState extends ConsumerState<AllocationForm> {
 
       if (_expansionId != null) {
         data['expansion_id'] = _expansionId.toString();
+      }
+
+      if (_expenseId != null) {
+        data['expense_id'] = _expenseId.toString();
       }
 
       widget.onSubmit(data, _chequeImage?.path);

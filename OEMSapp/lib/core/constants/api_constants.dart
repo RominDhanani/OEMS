@@ -3,7 +3,7 @@ import 'dart:io' show Platform;
 
 class ApiConstants {
   // Individual defines for more flexibility
-  static const String _apiIp = String.fromEnvironment('API_IP', defaultValue: '192.168.0.196');
+  static const String _apiIp = String.fromEnvironment('API_IP', defaultValue: 'oems-backend.vercel.app');
 
 
   static String getBaseUrl(String? customIp) {

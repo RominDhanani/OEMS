@@ -613,7 +613,7 @@ class ExpenseDetailsScreen extends ConsumerWidget {
           initialData: {
             'to_user_id': expense.userId,
             'amount': expense.amount,
-            'description': "Fund for expense: ${expense.title}",
+            'description': "Fund for expense: ${expense.title} (ID: ${expense.id})",
             'expense_id': expense.id,
           },
           onCancel: () => Navigator.pop(context),
