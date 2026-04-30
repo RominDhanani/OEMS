@@ -34,10 +34,16 @@ router.post('/', authenticateToken, authorizeRoles('MANAGER', 'USER'), expenseUp
     }
 
     // Insert expense
+    // Ensure date is in YYYY-MM-DD format for MySQL
+    let finalDate = expense_date;
+    if (finalDate && typeof finalDate === 'string' && finalDate.includes('T')) {
+      finalDate = finalDate.split('T')[0];
+    }
+
     const [expenseResult] = await db.execute(
       `INSERT INTO expenses (user_id, title, category, department, amount, expense_date, description, status) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [userId, title, category, department || null, amount, expense_date, description, 'PENDING_APPROVAL']
+      [userId, title, category, department || null, amount, finalDate, description, 'PENDING_APPROVAL']
     );
 
     const expenseId = expenseResult.insertId;
@@ -292,10 +298,16 @@ router.put('/:id', authenticateToken, expenseUpload.array('vouchers', 10), async
       rejectionReason = null;
     }
 
+    // Ensure date is in YYYY-MM-DD format for MySQL
+    let finalDate = expense_date || expense.expense_date;
+    if (finalDate && typeof finalDate === 'string' && finalDate.includes('T')) {
+      finalDate = finalDate.split('T')[0];
+    }
+
     // Update expense fields
     await db.execute(
       `UPDATE expenses SET title = ?, category = ?, department = ?, amount = ?, expense_date = ?, description = ?, status = ?, rejection_reason = ? WHERE id = ?`,
-      [title || expense.title, category || expense.category, department || expense.department || null, amount || expense.amount, expense_date || expense.expense_date, description || expense.description, newStatus, rejectionReason, id]
+      [title || expense.title, category || expense.category, department || expense.department || null, amount || expense.amount, finalDate, description || expense.description, newStatus, rejectionReason, id]
     );
 
     // Handle new files if any

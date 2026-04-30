@@ -137,7 +137,7 @@ class _CreateExpenseScreenState extends ConsumerState<CreateExpenseScreen> {
         'amount': _amountController.text.trim(),
         'category': effectiveCategory,
         'department': _selectedDepartment,
-        'expense_date': _selectedDate.toIso8601String(),
+        'expense_date': _selectedDate.toIso8601String().split('T')[0],
         'description': _descController.text.trim(),
       };
 
