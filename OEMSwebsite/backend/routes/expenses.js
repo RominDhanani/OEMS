@@ -37,13 +37,13 @@ router.post('/', authenticateToken, authorizeRoles('MANAGER', 'USER'), expenseUp
     const [expenseResult] = await db.execute(
       `INSERT INTO expenses (user_id, title, category, department, amount, expense_date, description, status) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [userId, title, category, department || null, amount, expense_date, description, 'CREATED']
+      [userId, title, category, department || null, amount, expense_date, description, 'PENDING_APPROVAL']
     );
 
     const expenseId = expenseResult.insertId;
 
     // Auto-approve if CEO, otherwise set to PENDING_APPROVAL
-    let status = 'CREATED';
+    let status = 'PENDING_APPROVAL';
     if (role === 'CEO') {
       status = 'RECEIPT_APPROVED';
       await db.execute(
@@ -280,7 +280,7 @@ router.put('/:id', authenticateToken, expenseUpload.array('vouchers', 10), async
     }
 
     const expense = expenses[0];
-    if (expense.status !== 'CREATED' && expense.status !== 'PENDING_APPROVAL' && expense.status !== 'RECEIPT_APPROVED' && expense.status !== 'REJECTED') {
+    if (expense.status !== 'PENDING_APPROVAL' && expense.status !== 'RECEIPT_APPROVED' && expense.status !== 'REJECTED') {
       return res.status(400).json({ message: 'Cannot edit expense that is already processed further' });
     }
 
@@ -338,7 +338,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 
     const expense = expenses[0];
-    if (expense.status !== 'CREATED' && expense.status !== 'PENDING_APPROVAL' && expense.status !== 'RECEIPT_APPROVED' && expense.status !== 'REJECTED') {
+    if (expense.status !== 'PENDING_APPROVAL' && expense.status !== 'RECEIPT_APPROVED' && expense.status !== 'REJECTED') {
       return res.status(400).json({ message: 'Cannot delete expense that is already processed further' });
     }
 
@@ -623,7 +623,7 @@ router.delete('/:id/documents/:docId', authenticateToken, async (req, res) => {
       }
     }
 
-    if (expense.status !== 'CREATED' && expense.status !== 'PENDING_APPROVAL' && expense.status !== 'RECEIPT_APPROVED' && expense.status !== 'REJECTED') {
+    if (expense.status !== 'PENDING_APPROVAL' && expense.status !== 'RECEIPT_APPROVED' && expense.status !== 'REJECTED') {
       return res.status(400).json({ message: 'Cannot delete files from approved/processed expenses' });
     }
 

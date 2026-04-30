@@ -35,6 +35,7 @@ app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/funds', require('./routes/funds'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/migrate', require('./routes/migrate')); // Temporary migration route
 
 /**
  * Health Check Endpoint
