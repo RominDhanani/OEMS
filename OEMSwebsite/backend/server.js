@@ -36,6 +36,7 @@ app.use('/api/funds', require('./routes/funds'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/migrate', require('./routes/migrate')); // Temporary migration route
+app.use('/api/env-check', require('./routes/env-check')); // Temporary env check route
 
 /**
  * Health Check Endpoint
