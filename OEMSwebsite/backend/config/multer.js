@@ -32,6 +32,16 @@ const chequeStorage = new CloudinaryStorage({
   },
 });
 
+// Configure storage for profile images
+const profileStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'oems/profiles',
+    resource_type: 'image',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'gif'],
+  },
+});
+
 // File filter (optional, Cloudinary also handles allowed_formats)
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
@@ -67,8 +77,16 @@ const chequeUpload = multer({
   }
 });
 
+const profileUpload = multer({
+  storage: profileStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit for profiles
+  }
+});
+
 module.exports = {
   expenseUpload,
   expansionUpload,
   chequeUpload,
+  profileUpload,
 };

@@ -20,36 +20,7 @@ const { authenticateToken } = require('../middleware/auth');
 const { getIO } = require('../utils/socket');
 
 // Configure Multer for profile images
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, '../uploads/profiles/');
-        console.log('Multer destination path:', uploadPath);
-        // Create directory if it doesn't exist
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'profile-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png|gif|webp/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-        if (mimetype && extname) {
-            return cb(null, true);
-        }
-        cb(new Error('Only images are allowed'));
-    },
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
-});
+const { profileUpload } = require('../config/multer');
 
 
 // Request Registration OTP
@@ -342,7 +313,7 @@ router.get('/me', authenticateToken, async (req, res) => {
 // Update Profile
 router.put('/profile', [
     authenticateToken,
-    upload.single('profile_image'), // Middleware for file upload
+    profileUpload.single('profile_image'), // Middleware for file upload
     body('email').isEmail().normalizeEmail(),
     body('full_name').trim().notEmpty(),
     body('mobile_number').optional().trim().isMobilePhone(),
@@ -389,9 +360,8 @@ router.put('/profile', [
         if (req.file) {
             query += ', profile_image = ?';
 
-            // Construct path using filename to ensure relative path is stored correctly
-            // We want to store '/uploads/profiles/filename.jpg'
-            const dbPath = '/uploads/profiles/' + req.file.filename;
+            // Use Cloudinary path directly
+            const dbPath = req.file.path;
 
             console.log('DB Path to save:', dbPath);
             params.push(dbPath);
@@ -459,8 +429,8 @@ router.delete('/profile-image', authenticateToken, async (req, res) => {
 
             const filePath = path.join(__dirname, '../', relativePath);
 
-            // Delete the file if it exists
-            if (fs.existsSync(filePath)) {
+            // Delete the file if it exists and is local
+            if (fs.existsSync(filePath) && !user.profile_image.startsWith('http')) {
                 fs.unlinkSync(filePath);
             }
 
