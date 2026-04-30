@@ -49,7 +49,12 @@ module.exports = {
     },
     getIO: () => {
         if (!io) {
-            throw new Error('Socket.io not initialized!');
+            // On Vercel serverless, Socket.io is never initialized.
+            // Return a safe no-op stub so backend code doesn't crash.
+            return {
+                emit: () => {},
+                to: () => ({ emit: () => {} }),
+            };
         }
         return io;
     }

@@ -12,12 +12,17 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         if (user) {
-            // Connect to socket when user is logged in
-            // Handle localhost vs 127.0.0.1 specifically for IPv4 listeners
-            let hostname = window.location.hostname;
-            if (hostname === 'localhost') hostname = '127.0.0.1';
+            // Vercel serverless does not support WebSockets.
+            // Only connect in local development.
+            const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-            const socketInstance = io(`${window.location.protocol}//${hostname}:5000`, {
+            if (!isDev) {
+                // In production, skip socket connection entirely
+                setSocket(null);
+                return;
+            }
+
+            const socketInstance = io('http://127.0.0.1:5000', {
                 reconnection: true,
                 reconnectionAttempts: 5
             });
@@ -48,3 +53,4 @@ export const SocketProvider = ({ children }) => {
         </SocketContext.Provider>
     );
 };
+
