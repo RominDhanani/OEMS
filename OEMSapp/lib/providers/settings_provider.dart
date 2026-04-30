@@ -91,11 +91,20 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       state = state.copyWith(serverIp: savedIp);
     }
     
-    // Auto-discover if current IP is unreachable
-    final currentIp = state.serverIp ?? ApiConstants.getBaseUrl(null).split('//')[1].split(':')[0];
-    if (!(await _isServerReachable(currentIp))) {
+    // Auto-discover if current IP is unreachable AND it's a local-style IP
+    final currentUrl = ApiConstants.getBaseUrl(state.serverIp);
+    if (!(await _isServerReachable(currentUrl))) {
       if (!mounted) return;
-      await discoverServer();
+      
+      // If the saved custom IP is dead, clear it to fallback to production
+      if (state.serverIp != null) {
+        await resetServerIp();
+      }
+
+      // Only auto-discover if we are NOT trying to connect to a production URL
+      if (!currentUrl.contains('vercel.app')) {
+        await discoverServer();
+      }
     }
     
     if (!mounted) return;
@@ -291,14 +300,18 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     return null;
   }
 
-  Future<bool> _isServerReachable(String ip) async {
+  Future<bool> _isServerReachable(String url) async {
     try {
-      final String url = ip.contains(':') ? "http://$ip/api/health" : "http://$ip:5000/api/health";
+      final String healthUrl = url.endsWith('/api') ? "$url/health" : url.contains('/api/') ? url : "$url/api/health";
+      
       final response = await _dio.get(
-        url,
-        options: Options(receiveTimeout: const Duration(milliseconds: 1000), sendTimeout: const Duration(milliseconds: 1000)),
-      ).timeout(const Duration(milliseconds: 1500));
-      return response.statusCode == 200 && response.data['status'] == 'OK';
+        healthUrl,
+        options: Options(
+          receiveTimeout: const Duration(seconds: 10), // Increased for Vercel cold starts
+          sendTimeout: const Duration(seconds: 10)
+        ),
+      ).timeout(const Duration(seconds: 12));
+      return response.statusCode == 200 && (response.data['status'] == 'OK' || response.data['status'] == 'success');
     } catch (_) {
       return false;
     }

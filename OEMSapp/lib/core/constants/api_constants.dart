@@ -4,21 +4,27 @@ import 'dart:io' show Platform;
 class ApiConstants {
   // Individual defines for more flexibility
   static const String _apiIp = String.fromEnvironment('API_IP', defaultValue: '192.168.0.196');
-  static const String _apiPort = String.fromEnvironment('API_PORT', defaultValue: '5000');
+
 
   static String getBaseUrl(String? customIp) {
-    // 1. Prioritize Provided Custom IP
-    if (customIp != null && customIp.isNotEmpty) {
-      if (customIp.contains(':')) {
-        // If it already has a port, use it directly
-        return "http://$customIp/api";
-      }
-      return "http://$customIp:$_apiPort/api";
+    // 1. If we have a hardcoded production IP/Domain, ALWAYS prefer it in release mode
+    // unless explicitly overridden by a full URL
+    if (_apiIp.contains('vercel.app')) {
+      if (customIp != null && customIp.contains('://')) return "${customIp.endsWith('/') ? customIp.substring(0, customIp.length - 1) : customIp}/api";
+      return "https://$_apiIp/api";
     }
 
-    // 2. Prioritize Environment Variable
+    // 2. Prioritize Provided Custom IP (for development)
+    if (customIp != null && customIp.isNotEmpty) {
+      if (customIp.contains('://')) {
+        return "${customIp.endsWith('/') ? customIp.substring(0, customIp.length - 1) : customIp}/api";
+      }
+      return "https://$customIp/api";
+    }
+
+    // 3. Prioritize Environment Variable
     if (_apiIp.isNotEmpty) {
-      return "http://$_apiIp:$_apiPort/api";
+      return "https://$_apiIp/api";
     }
 
     // 3. Web Handling

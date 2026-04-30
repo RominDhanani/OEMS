@@ -15,10 +15,9 @@ async function checkDatabase() {
   const tableNames = tables.map(t => Object.values(t)[0]);
   console.log('Tables found:', tableNames.length);
 
-  for (const tableName of tableNames) {
-    const [count] = await connection.query(`SELECT COUNT(*) as count FROM ${tableName}`);
-    console.log(`- ${tableName}: ${count[0].count} rows`);
-  }
+  const [users] = await connection.query('SELECT email, role FROM users');
+  console.log('Users in DB:');
+  users.forEach(u => console.log(`- ${u.email} (${u.role})`));
 
   await connection.end();
 }
