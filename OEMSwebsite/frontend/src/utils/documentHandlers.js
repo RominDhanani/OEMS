@@ -2,6 +2,11 @@ import { generateExpensePDF, generateFundPDF, generateExpansionPDF } from './pdf
 
 const getDocumentUrl = (path) => {
     if (!path) return null;
+    
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+    }
+
     // Normalize slashes
     let cleanPath = path.replace(/\\/g, '/');
 
@@ -16,7 +21,10 @@ const getDocumentUrl = (path) => {
         cleanPath = `uploads/${cleanPath}`;
     }
 
-    return `${window.location.protocol}//${window.location.hostname}:5000/${cleanPath}`;
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const baseUrl = isDev ? 'https://oems-backend.vercel.app' : 'https://oems-backend.vercel.app';
+    
+    return `${baseUrl}/${cleanPath}`;
 };
 
 
@@ -63,3 +71,4 @@ export const handleDownloadPDF = (data, type = 'EXPENSE') => {
             console.error('Unknown PDF type:', type);
     }
 };
+

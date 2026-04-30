@@ -69,7 +69,7 @@ const AllocationForm = ({
             // Set preview URL for existing image
             if (initialData.cheque_image_path) {
                 // Assuming backend serves uploads at root or /uploads, adjust if needed
-                setPreviewUrl(`http://localhost:5000/${initialData.cheque_image_path}`);
+                setPreviewUrl(`https://oems-backend.vercel.app/${initialData.cheque_image_path}`);
             } else {
                 setPreviewUrl(null);
             }
@@ -505,3 +505,4 @@ const AllocationForm = ({
 
 
 export default AllocationForm;
+

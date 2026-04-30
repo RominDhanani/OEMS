@@ -68,7 +68,7 @@ const ProfileSection = () => {
                 mobile_number: user.mobile_number || ''
             }));
             if (user.profile_image) {
-                setPreviewImage(`http://localhost:5000${user.profile_image.startsWith('/') ? '' : '/'}${user.profile_image.replace(/\\/g, '/')}`);
+                setPreviewImage(`https://oems-backend.vercel.app${user.profile_image.startsWith('/') ? '' : '/'}${user.profile_image.replace(/\\/g, '/')}`);
             }
         }
     }, [user]);
@@ -455,3 +455,4 @@ const ActiveSessionsList = () => {
 };
 
 export default ProfileSection;
+

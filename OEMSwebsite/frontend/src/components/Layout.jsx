@@ -175,7 +175,7 @@ const Layout = ({ children, title, menuItems = [], activeItem, onMenuItemClick }
               >
                 {user?.profile_image && !imageError ? (
                   <img
-                    src={`http://localhost:5000${user.profile_image.startsWith('/') ? '' : '/'}${user.profile_image.replace(/\\/g, '/')}`}
+                    src={`https://oems-backend.vercel.app${user.profile_image.startsWith('/') ? '' : '/'}${user.profile_image.replace(/\\/g, '/')}`}
                     alt="Profile"
                     className="profile-avatar-small"
                     onError={() => setImageError(true)}
@@ -287,3 +287,4 @@ const Layout = ({ children, title, menuItems = [], activeItem, onMenuItemClick }
 };
 
 export default Layout;
+
