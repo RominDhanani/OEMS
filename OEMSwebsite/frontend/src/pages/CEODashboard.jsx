@@ -1433,7 +1433,7 @@ export default function CEODashboard() {
                             {u.profile_image ? (
                               <div style={{ width: '26px', height: '26px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-light)', flexShrink: 0 }}>
                                 <img
-                                  src={`https://oems-backend.vercel.app${u.profile_image.startsWith('/') ? '' : '/'}${u.profile_image.replace(/\\/g, '/')}`}
+                                  src={u.profile_image.startsWith('http') ? u.profile_image : `https://oems-backend.vercel.app${u.profile_image.startsWith('/') ? '' : '/'}${u.profile_image.replace(/\\/g, '/')}`}
                                   alt={u.full_name}
                                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                   onError={(e) => {

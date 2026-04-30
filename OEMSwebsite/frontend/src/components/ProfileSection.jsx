@@ -68,7 +68,7 @@ const ProfileSection = () => {
                 mobile_number: user.mobile_number || ''
             }));
             if (user.profile_image) {
-                setPreviewImage(`https://oems-backend.vercel.app${user.profile_image.startsWith('/') ? '' : '/'}${user.profile_image.replace(/\\/g, '/')}`);
+                setPreviewImage(user.profile_image.startsWith('http') ? user.profile_image : `https://oems-backend.vercel.app${user.profile_image.startsWith('/') ? '' : '/'}${user.profile_image.replace(/\\/g, '/')}`);
             }
         }
     }, [user]);

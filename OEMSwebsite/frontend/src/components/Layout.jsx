@@ -175,7 +175,7 @@ const Layout = ({ children, title, menuItems = [], activeItem, onMenuItemClick }
               >
                 {user?.profile_image && !imageError ? (
                   <img
-                    src={`https://oems-backend.vercel.app${user.profile_image.startsWith('/') ? '' : '/'}${user.profile_image.replace(/\\/g, '/')}`}
+                    src={user.profile_image.startsWith('http') ? user.profile_image : `https://oems-backend.vercel.app${user.profile_image.startsWith('/') ? '' : '/'}${user.profile_image.replace(/\\/g, '/')}`}
                     alt="Profile"
                     className="profile-avatar-small"
                     onError={() => setImageError(true)}
